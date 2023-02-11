@@ -61,25 +61,19 @@ typedef struct missoes
 } missoes_t;
 
 /* retorna um valor caso ele seja maior que o valor mínimo*/
-int maxi(int min, int valor)
+int maxi(int num1, int num2)
 {
-    if (valor < min)
-        return min;
-    return valor;
+    return num2 < num1 ? num1 : num2;
 }
 
 /* retorna um valor aleatório entre min e max*/
 int aleat(int min, int max)
 {
-    int r;
+    int num_aleatorio;
 
-    if (min == max)
-    {
-        return min;
-    }
-    r = (min + (rand() % ((max - min + 1))));
+    num_aleatorio = (min + (rand() % ((max - min + 1))));
 
-    return r;
+    return num_aleatorio;
 }
 
 /* cria um vetor de ponteiros de herois*/
