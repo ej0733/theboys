@@ -7,18 +7,18 @@
 #define N_HAB 10
 #define TEMPO_FIM 34944
 
-#define CHEGADA 10
-#define SAIDA 20
-#define MISSAO 30
-#define FIM 40
+#define CHEGADA 0
+#define SAIDA 1
+#define MISSAO 2
+#define FIM 3
 
 typedef struct heroi
 {
-    int id;          /* identificação do herói   */
-    int paciencia;   /* paciência do herói       */
-    int idade;       /* idade do herói           */
-    int experiencia;          /* experiência do herói     */
-    conjunto_t *hab; /* habilidades do herói     */
+    int id;
+    int paciencia;
+    int idade;
+    int experiencia;
+    conjunto_t *hab;
 } heroi_t;
 
 typedef struct par_ordenado
@@ -29,30 +29,30 @@ typedef struct par_ordenado
 
 typedef struct locais
 {
-    int id;             /* identificação do local               */
-    int lotacao_maxima;          /* número máximo de herois              */
-    int herois_no_lugar;       /* numero de heróis no local            */
-    conjunto_t *herois; /* conjunto de heróis                   */
-    fila_t *fila;       /* fila de herois para entrar na cidade */
-    par_ordenado_t *locallizacao;     /* coordenadas x e y do local           */
+    int id;
+    int lotacao_maxima;
+    int herois_no_lugar;
+    conjunto_t *herois;
+    fila_t *fila;
+    par_ordenado_t *locallizacao;
 
 } locais_t;
 
 typedef struct mundo
 {
-    int tempo_atual;         /* tempo atual do mundo                 */
-    int n_tamanho_mundo;   /* tamanho do mundo                     */
-    int n_herois;      /* número de heróis no mundo            */
-    int n_locais;      /* número de locais no mundo            */
-    heroi_t **herois;  /* vetor de ponteiros de heróis no mundo*/
-    locais_t **locais; /* vetor de ponteiros de locais no mundo*/
-    conjunto_t *habilidades;   /* conjunto de habilidades totais       */
+    int tempo_atual;
+    int n_tamanho_mundo;
+    int n_herois;
+    int n_locais;
+    heroi_t **herois;
+    locais_t **locais;
+    conjunto_t *habilidades;
 } mundo_t;
 
 typedef struct missoes
 {
-    int id;             /* identificação da missão          */
-    conjunto_t *missao; /* conjunto de habilidades de missão*/
+    int id;
+    conjunto_t *missao;
 } missoes_t;
 
 /* Responsável por criar o mundo, alocando espaço para o mesmo e inicializando
