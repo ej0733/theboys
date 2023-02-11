@@ -6,7 +6,7 @@
 
 #include "libmundo.h"
 
-int maxi(int num1, int num2)
+int max(int num1, int num2)
 {
     return num2 < num1 ? num1 : num2;
 }
@@ -22,7 +22,7 @@ int aleat(int min, int max)
 }
 
 /* cria um vetor de ponteiros de herois*/
-heroi_t **cria_herois(mundo_t *mundo)
+heroi_t **instanciar_herois(mundo_t *mundo)
 {
     heroi_t **heroi;
     int i;
@@ -52,7 +52,7 @@ heroi_t **cria_herois(mundo_t *mundo)
 }
 
 /* destrói um vetor de ponteiros de heróis*/
-heroi_t **destroi_herois(heroi_t **herois, int tam)
+heroi_t **destruir_herois(heroi_t **herois, int tam)
 {
     int i;
     for (i = 0; i < tam; i++)
@@ -66,7 +66,7 @@ heroi_t **destroi_herois(heroi_t **herois, int tam)
 
 /* cria e retorna uma struct local
  * retorna null em caso de falha*/
-locais_t *cria_local(int tam, int id)
+locais_t *instanciar_local(int tam, int id)
 {
     locais_t *local;
     /* aloca espaço para a struct local*/
@@ -97,7 +97,7 @@ locais_t *cria_local(int tam, int id)
 
 /* cria e retorna um vetor de structs locais
  * retorna null em caso de falha                */
-locais_t **cria_locais(mundo_t *mundo)
+locais_t **instanciar_locais(mundo_t *mundo)
 {
     locais_t **locais;
     int i;
@@ -108,7 +108,7 @@ locais_t **cria_locais(mundo_t *mundo)
     }
     for (i = 0; i < (mundo->n_locais); i++)
     {
-        (*(locais + i)) = cria_local(mundo->n_tamanho_mundo, i);
+        (*(locais + i)) = instanciar_local(mundo->n_tamanho_mundo, i);
         if ((*(locais + i)) == NULL)
         {
             printf("ERRO 1.5.2: falha ao alocar memória no vetor 'locais+%d'.\n", i);
@@ -120,7 +120,7 @@ locais_t **cria_locais(mundo_t *mundo)
 
 /* desaloca memória de um vetor de structs locais
  * retorna null                                     */
-locais_t **destroi_locais(mundo_t *mundo)
+locais_t **destruir_locais(mundo_t *mundo)
 {
     int i;
     for (i = 0; i < mundo->n_locais; i++)
@@ -134,7 +134,7 @@ locais_t **destroi_locais(mundo_t *mundo)
     return NULL;
 }
 
-mundo_t *cria_mundo()
+mundo_t *instanciar_mundo()
 {
     mundo_t *mundo;
     int i;
@@ -162,13 +162,13 @@ mundo_t *cria_mundo()
         return NULL;
     }
 
-    mundo->herois = cria_herois(mundo);
+    mundo->herois = instanciar_herois(mundo);
     if (mundo->herois == NULL)
     {
         printf("ERRO 1.4: falha na função cria_herois.\n");
         return NULL;
     }
-    mundo->locais = cria_locais(mundo);
+    mundo->locais = instanciar_locais(mundo);
     if (mundo->locais == NULL)
     {
         printf("ERRO 1.5: falha na função cria_locais.\n");
@@ -178,18 +178,18 @@ mundo_t *cria_mundo()
     return mundo;
 }
 
-mundo_t *destroi_mundo(mundo_t *mundo)
+mundo_t *destruir_mundo(mundo_t *mundo)
 {
 
-    mundo->herois = destroi_herois(mundo->herois, mundo->n_herois);
-    mundo->locais = destroi_locais(mundo);
+    mundo->herois = destruir_herois(mundo->herois, mundo->n_herois);
+    mundo->locais = destruir_locais(mundo);
     mundo->habilidades = destroi_cjt(mundo->habilidades);
     free(mundo);
 
     return NULL;
 }
 
-lef_t *cria_cronologia(int n_herois, int n_locais)
+lef_t *instanciar_lef(int n_herois, int n_locais)
 {
     lef_t *cronologia;
     evento_t *evento;
@@ -237,12 +237,12 @@ lef_t *cria_cronologia(int n_herois, int n_locais)
     return cronologia;
 }
 
-int TPL(int paciencia)
+int calcular_tpl(int paciencia)
 {
-    return (maxi(1, (paciencia / 10) + (aleat(-2, 6))));
+    return (max(1, (paciencia / 10) + (aleat(-2, 6))));
 }
 
-int chegada(lef_t *cronologia, evento_t *evento, mundo_t *mundo)
+int tratar_evento_chegada(lef_t *cronologia, evento_t *evento, mundo_t *mundo)
 {
     evento_t *sai;
     int tpl;
@@ -302,7 +302,7 @@ int chegada(lef_t *cronologia, evento_t *evento, mundo_t *mundo)
     sai->tipo = SAIDA;
     sai->dado1 = evento->dado1;
     sai->dado2 = evento->dado2;
-    tpl = TPL((*(mundo->herois + (evento->dado1)))->paciencia);
+    tpl = calcular_tpl((*(mundo->herois + (evento->dado1)))->paciencia);
     sai->tempo = (mundo->tempo_atual) + tpl;
     if (!(adiciona_ordem_lef(cronologia, sai)))
     {
@@ -314,7 +314,7 @@ int chegada(lef_t *cronologia, evento_t *evento, mundo_t *mundo)
     return 1;
 }
 
-int TDL(mundo_t *mundo, int a, int b, int id)
+int calcular_tdl(mundo_t *mundo, int a, int b, int id)
 {
     int d, v;
     int x_a = ((*(mundo->locais + a))->locallizacao)->x;
@@ -323,13 +323,13 @@ int TDL(mundo_t *mundo, int a, int b, int id)
     int y_b = ((*(mundo->locais + b))->locallizacao)->y;
     int idade = (*(mundo->herois + id))->idade;
     d = sqrt(pow(x_b - x_a, 2) + pow((y_b - y_a), 2));
-    v = 100 - maxi(0, idade - 40);
+    v = 100 - max(0, idade - 40);
     return ((d / v) / 15);
 }
 
 /* trata o evento saída
  * retorna 1 em caso de sucesso e 0 em caso de falha*/
-int saida(lef_t *cronologia, evento_t *evento, mundo_t *mundo)
+int tratar_evento_saida(lef_t *cronologia, evento_t *evento, mundo_t *mundo)
 {
     evento_t *chegada;
     int *elemento, tdl;
@@ -345,7 +345,7 @@ int saida(lef_t *cronologia, evento_t *evento, mundo_t *mundo)
     chegada->tipo = CHEGADA;
     chegada->dado1 = evento->dado1;
     chegada->dado2 = aleat(0, ((mundo->n_locais) - 1));
-    tdl = TDL(mundo, evento->dado2, chegada->dado2, chegada->dado1);
+    tdl = calcular_tdl(mundo, evento->dado2, chegada->dado2, chegada->dado1);
     chegada->tempo = mundo->tempo_atual + tdl;
 
     /* adiciona em ordem o evento chegada na lista de eventos futuros cronologia*/
@@ -420,7 +420,7 @@ int saida(lef_t *cronologia, evento_t *evento, mundo_t *mundo)
 
 /* cria o vetor de missões
  * retorna null em caso de falha*/
-missoes_t **cria_missoes(lef_t *cronologia, conjunto_t *hab)
+missoes_t **instanciar_missoes(lef_t *cronologia, conjunto_t *hab)
 {
     int i, n_missoes = TAM_MUNDO / 100;
     missoes_t **missoes;
@@ -465,7 +465,7 @@ missoes_t **cria_missoes(lef_t *cronologia, conjunto_t *hab)
 }
 
 /* libera espaço no vetor de ponteiros de missões*/
-missoes_t **destroi_missoes(missoes_t **missoes)
+missoes_t **destruir_missoes(missoes_t **missoes)
 {
     int i;
     for (i = 0; i < ((TAM_MUNDO / 100) - 1); i++)
@@ -479,7 +479,7 @@ missoes_t **destroi_missoes(missoes_t **missoes)
 
 /* cria vetor de conjuntos
  * retorna NULL em caso de falha*/
-conjunto_t **cria_vetor_cjt(int tam, int tam2)
+conjunto_t **instanciar_vetor_cjt(int tam, int tam2)
 {
     conjunto_t **v;
     int i;
@@ -494,7 +494,7 @@ conjunto_t **cria_vetor_cjt(int tam, int tam2)
 }
 
 /* libera espaço alocado num vetor de tam ponteiros de conjuntos*/
-conjunto_t **liberar_vetor_cjt(conjunto_t **v, int tam)
+conjunto_t **destruir_vetor_cjt(conjunto_t **v, int tam)
 {
     int i;
     for (i = 0; i < tam; i++)
@@ -506,13 +506,13 @@ conjunto_t **liberar_vetor_cjt(conjunto_t **v, int tam)
 
 /* procura uma equipe que solucuine a missão
  * devolve -1 caso não exista               */
-int solucao(int tam, locais_t **locais, heroi_t **herois, conjunto_t *missao, evento_t *evento)
+int encontrar_equipe_missao(int tam, locais_t **locais, heroi_t **herois, conjunto_t *missao, evento_t *evento)
 {
     conjunto_t *uni_hab, **hab_hero;
     int i, j, card1, card2, posi, tam_max = N_HAB;
 
     /* cria um vetor com a união das habilidades dos herois da equipe*/
-    hab_hero = cria_vetor_cjt(tam, tam_max);
+    hab_hero = instanciar_vetor_cjt(tam, tam_max);
 
     /*faz a união dos conjuntos de habilidades dos herois
      * e guarda os valores no vetor de habilidad cria e retorna uma struct local
@@ -565,14 +565,14 @@ int solucao(int tam, locais_t **locais, heroi_t **herois, conjunto_t *missao, ev
     }
 
     /* libera o vetor de ponteiros de habilidades dos herois*/
-    hab_hero = liberar_vetor_cjt(hab_hero, tam);
+    hab_hero = destruir_vetor_cjt(hab_hero, tam);
 
     return posi;
 }
 
 /* trata o evento missão
  * retorna 1 se for bem sucedido de e 0 em caso de falha*/
-int missao(lef_t *cronologia, evento_t *evento, mundo_t *mundo, missoes_t **missoes)
+int tratar_evento_missao(lef_t *cronologia, evento_t *evento, mundo_t *mundo, missoes_t **missoes)
 {
     int posi, i, j;
     evento_t *missao;
@@ -583,7 +583,7 @@ int missao(lef_t *cronologia, evento_t *evento, mundo_t *mundo, missoes_t **miss
 
     /* verifica se existe um conjunto de heróis que possa realizar a missão
      * retorna a id de 0 até n_locais caso exista e -1 caso contrário*/
-    posi = solucao((mundo->n_locais), (mundo->locais), (mundo->herois), ((*(missoes + (evento->dado1)))->missao), evento);
+    posi = encontrar_equipe_missao((mundo->n_locais), (mundo->locais), (mundo->herois), ((*(missoes + (evento->dado1)))->missao), evento);
 
     if (posi != -1)
     {

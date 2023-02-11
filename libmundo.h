@@ -58,18 +58,18 @@ typedef struct missoes
 /* Responsável por criar o mundo, alocando espaço para o mesmo e inicializando
  * os seus campos.
  * Retorna um ponteiro para o mundo criado.*/
-mundo_t *cria_mundo();
+mundo_t *instanciar_mundo();
 
-lef_t *cria_cronologia(int n_herois, int n_locais);
+lef_t *instanciar_lef(int n_herois, int n_locais);
 
-missoes_t **cria_missoes(lef_t *cronologia, conjunto_t *hab);
+missoes_t **instanciar_missoes(lef_t *cronologia, conjunto_t *hab);
 
-int chegada(lef_t *cronologia, evento_t *evento, mundo_t *mundo);
+int tratar_evento_chegada(lef_t *cronologia, evento_t *evento, mundo_t *mundo);
 
-int saida(lef_t *cronologia, evento_t *evento, mundo_t *mundo);
+int tratar_evento_saida(lef_t *cronologia, evento_t *evento, mundo_t *mundo);
 
-int missao(lef_t *cronologia, evento_t *evento, mundo_t *mundo, missoes_t **missoes);
+int tratar_evento_missao(lef_t *cronologia, evento_t *evento, mundo_t *mundo, missoes_t **missoes);
 
-missoes_t **destroi_missoes(missoes_t **missoes);
+missoes_t **destruir_missoes(missoes_t **missoes);
 
-mundo_t *destroi_mundo(mundo_t *mundo);
+mundo_t *destruir_mundo(mundo_t *mundo);
