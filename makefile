@@ -11,20 +11,20 @@ CC = gcc
 mundo: $(objects)
 	$(CC) -o mundo $(objects) $(LDFLAGS)
 
-libconjunto.o: libconjunto.c
-	$(CC) -c $(CFLAGS) libconjunto.c
+libconjunto.o: libs/libconjunto.c
+	$(CC) -c $(CFLAGS) libs/libconjunto.c
 
-liblef.o: liblef.c
-	$(CC) -c $(CFLAGS) liblef.c
+liblef.o: libs/liblef.c
+	$(CC) -c $(CFLAGS) libs/liblef.c
 
-libfila.o: libfila.c
-	$(CC) -c $(CFLAGS) libfila.c
+libfila.o: libs/libfila.c
+	$(CC) -c $(CFLAGS) libs/libfila.c
 
-libmundo.o: libmundo.c
-	$(CC) -c $(CFLAGS) libmundo.c
+libmundo.o: libs/libmundo.c
+	$(CC) -c $(CFLAGS) libs/libmundo.c
 
-libevento.o: libevento.c
-	$(CC) -c $(CFLAGS) libevento.c
+libevento.o: libs/libevento.c
+	$(CC) -c $(CFLAGS) libs/libevento.c
 
 mundo.o: mundo.c
 	$(CC) -c $(CFLAGS) mundo.c

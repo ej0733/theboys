@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "libevento.h"
+#include "libs/libevento.h"
 
 int main()
 {
