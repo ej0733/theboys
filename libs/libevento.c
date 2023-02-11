@@ -212,7 +212,6 @@ int tratar_evento_saida(lef_t *cronologia, evento_t *evento, mundo_t *mundo)
     return 1;
 }
 
-
 /* procura uma equipe que solucuine a missão
  * devolve -1 caso não exista               */
 int encontrar_equipe_missao(int tam, locais_t **locais, heroi_t **herois, conjunto_t *missao, evento_t *evento)
