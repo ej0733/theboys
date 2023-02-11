@@ -26,11 +26,11 @@ typedef struct heroi
     conjunto_t *hab; /* habilidades do herói     */
 } heroi_t;
 
-typedef struct coord
+typedef struct par_ordenado
 {
     int x;
     int y;
-} coord_t;
+} par_ordenado_t;
 
 typedef struct locais
 {
@@ -39,7 +39,7 @@ typedef struct locais
     int herois_no_lugar;       /* numero de heróis no local            */
     conjunto_t *herois; /* conjunto de heróis                   */
     fila_t *fila;       /* fila de herois para entrar na cidade */
-    coord_t *locallizacao;     /* coordenadas x e y do local           */
+    par_ordenado_t *locallizacao;     /* coordenadas x e y do local           */
 
 } locais_t;
 
@@ -138,7 +138,7 @@ locais_t *cria_local(int tam, int id)
     }
 
     /* aloca espaço para a struct de coordenadas do local*/
-    if (!(local->locallizacao = malloc(sizeof(coord_t))))
+    if (!(local->locallizacao = malloc(sizeof(par_ordenado_t))))
     {
         printf("ERRO 1.5.2.2: falha ao alocar memória na coordenada.\n");
         return NULL;
