@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-
 #include "libs/libevento.h"
 
 int main()
@@ -17,7 +16,7 @@ int main()
 
     if (mundo == NULL)
     {
-        printf("ERRO 1: falha na função cria_mundo.\n");
+        printf("ERRO: Não foi possível instanciar mundo.\n");
         return 0;
     }
 
@@ -25,7 +24,7 @@ int main()
 
     if (lef == NULL)
     {
-        printf("ERRO 2: falha na função cria_cronologia.\n");
+        printf("ERRO: Não foi possível instanciar lef.\n");
         return 0;
     }
 
@@ -33,7 +32,7 @@ int main()
 
     if (missoes == NULL)
     {
-        printf("ERRO 3: falha na função cria_missoes.\n");
+        printf("ERRO: Não foi possível instanciar missoes.\n");
         return 0;
     }
 
@@ -50,7 +49,7 @@ int main()
 
             if (!(tratar_evento_chegada(lef, evento, mundo)))
             {
-                printf("ERRO 4: falha na função chegada.\n");
+                printf("ERRO: Houve um problema em evento CHEGADA.\n");
                 return 0;
             }
 
@@ -64,7 +63,7 @@ int main()
 
             if (!(tratar_evento_saida(lef, evento, mundo)))
             {
-                printf("ERRO 5: falha na função saida.\n");
+                printf("ERRO: Houve um problema em evento SAIDA.\n");
                 return 0;
             }
 
@@ -78,7 +77,7 @@ int main()
 
             if (!(tratar_evento_missao(lef, evento, mundo, missoes)))
             {
-                printf("ERRO 6: falha na função missao.\n");
+                printf("ERRO: Houve um problema em evento MISSAO.\n");
                 return 0;
             }
 
@@ -89,7 +88,6 @@ int main()
         case FIM:
         {
             imprime_evento_fim(evento, mundo);
-
             free(evento);
 
             missoes = destruir_missoes(missoes);

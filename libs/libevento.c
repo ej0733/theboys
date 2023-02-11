@@ -324,30 +324,53 @@ int tratar_evento_missao(lef_t *cronologia, evento_t *evento, mundo_t *mundo, mi
 
 void imprime_evento_chegada(evento_t *evento, mundo_t *mundo)
 {
-    printf("%6d:CHEGA HEROI %2d LOCAL %d (%2d/%2d), ", evento->tempo, evento->dado1,
-           evento->dado2, (cardinalidade_cjt((*(mundo->locais + (evento->dado2)))->herois)),
-           ((*(mundo->locais + (evento->dado2)))->lotacao_maxima));
+    int tempo_atual, id_heroi, id_local, herois_local, lotacao_maxima;
+
+    tempo_atual = evento->tempo;
+    id_heroi = evento->dado1;
+    id_local = evento->dado2;
+    herois_local = cardinalidade_cjt((*(mundo->locais + (evento->dado2)))->herois);
+    lotacao_maxima = ((*(mundo->locais + (evento->dado2)))->lotacao_maxima);
+
+    printf("%6d:CHEGA HEROI %2d LOCAL %d (%2d/%2d), ", tempo_atual, id_heroi, id_local, herois_local, lotacao_maxima);
 }
 
 void imprime_evento_saida(evento_t *evento, mundo_t *mundo)
 {
-    printf("%6d:SAIDA HEROI %2d LOCAL %d (%2d/%2d)", evento->tempo, evento->dado1,
-           evento->dado2, (cardinalidade_cjt((*(mundo->locais + (evento->dado2)))->herois)),
-           ((*(mundo->locais + (evento->dado2)))->lotacao_maxima));
+    int tempo_atual, id_heroi, id_local, herois_local, lotacao_maxima;
+
+    tempo_atual = evento->tempo;
+    id_heroi = evento->dado1;
+    id_local = evento->dado2;
+    herois_local = cardinalidade_cjt((*(mundo->locais + (evento->dado2)))->herois);
+    lotacao_maxima = ((*(mundo->locais + (evento->dado2)))->lotacao_maxima);
+
+    printf("%6d:SAIDA HEROI %2d LOCAL %d (%2d/%2d)", tempo_atual, id_heroi, id_local, herois_local, lotacao_maxima);
 }
 
 void imprime_evento_missao(evento_t *evento, mundo_t *mundo)
 {
-    printf("%6d:MISSAO %3d ", evento->tempo, evento->dado1);
-    ;
+    int tempo_atual, id_missao;
+
+    tempo_atual = evento->tempo;
+    id_missao = evento->dado1;
+
+    printf("%6d:MISSAO %3d ", tempo_atual, id_missao);
 }
 
 void imprime_evento_fim(evento_t *evento, mundo_t *mundo)
 {
-    int i;
+    int i, tempo_atual, id_heroi, experiencia;
 
-    printf("%6d:FIM\n", evento->tempo);
+    tempo_atual = evento->tempo;
+
+    printf("%6d:FIM\n", tempo_atual);
 
     for (i = 0; i < (mundo->n_herois); i++)
-        printf("HEROI %2d EXPERIENCIA %2d\n", (*(mundo->herois + i))->id, (*(mundo->herois + i))->experiencia);
+    {
+        id_heroi = (*(mundo->herois + i))->id;
+        experiencia = (*(mundo->herois + i))->experiencia;
+        
+        printf("HEROI %2d EXPERIENCIA %2d\n", id_heroi, experiencia);
+    }
 }
