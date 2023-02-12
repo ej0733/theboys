@@ -4,7 +4,7 @@ int tratar_evento_chegada(lef_t *cronologia, evento_t *evento, mundo_t *mundo);
 
 int tratar_evento_saida(lef_t *cronologia, evento_t *evento, mundo_t *mundo);
 
-int tratar_evento_missao(lef_t *cronologia, evento_t *evento, mundo_t *mundo, missoes_t **missoes);
+int tratar_evento_missao(lef_t *cronologia, evento_t *evento, mundo_t *mundo, missao_t **missoes);
 
 void imprime_evento_chegada(evento_t *evento, mundo_t *mundo);
 

@@ -8,7 +8,7 @@ int main()
     lef_t *lef;
     mundo_t *mundo;
     evento_t *evento;
-    missoes_t **missoes;
+    missao_t **missoes;
 
     srand(time(NULL));
 
@@ -43,7 +43,7 @@ int main()
 
         switch (evento->tipo)
         {
-        case CHEGADA:
+        case TIPO_CHEGADA:
         {
             imprime_evento_chegada(evento, mundo);
 
@@ -57,7 +57,7 @@ int main()
         }
         break;
 
-        case SAIDA:
+        case TIPO_SAIDA:
         {
             imprime_evento_saida(evento, mundo);
 
@@ -71,7 +71,7 @@ int main()
         }
         break;
 
-        case MISSAO:
+        case TIPO_MISSAO:
         {
             imprime_evento_missao(evento, mundo);
 
@@ -85,7 +85,7 @@ int main()
         }
         break;
 
-        case FIM:
+        case TIPO_FIM:
         {
             imprime_evento_fim(evento, mundo);
             free(evento);

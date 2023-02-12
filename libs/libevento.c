@@ -86,7 +86,7 @@ int tratar_evento_chegada(lef_t *cronologia, evento_t *evento, mundo_t *mundo)
                 return 0;
             }
 
-            sai->tipo = SAIDA;
+            sai->tipo = TIPO_SAIDA;
             sai->dado1 = evento->dado1;
             sai->dado2 = evento->dado2;
             sai->tempo = mundo->tempo_atual;
@@ -117,7 +117,7 @@ int tratar_evento_chegada(lef_t *cronologia, evento_t *evento, mundo_t *mundo)
         return 0;
     }
 
-    sai->tipo = SAIDA;
+    sai->tipo = TIPO_SAIDA;
     sai->dado1 = evento->dado1;
     sai->dado2 = evento->dado2;
     tpl = calcular_tpl(mundo->herois[evento->dado1]->paciencia);
@@ -148,7 +148,7 @@ int tratar_evento_saida(lef_t *cronologia, evento_t *evento, mundo_t *mundo)
     }
 
     /* adiciona os parametros ao evento de chegada*/
-    chegada->tipo = CHEGADA;
+    chegada->tipo = TIPO_CHEGADA;
     chegada->dado1 = evento->dado1;
     chegada->dado2 = aleat(0, (mundo->n_locais - 1));
     tdl = calcular_tdl(mundo, evento->dado2, chegada->dado2, chegada->dado1);
@@ -192,7 +192,7 @@ int tratar_evento_saida(lef_t *cronologia, evento_t *evento, mundo_t *mundo)
             }
 
             /* adiciona parametros para o evento de chegada para o herói que está na fila*/
-            chegada->tipo = CHEGADA;
+            chegada->tipo = TIPO_CHEGADA;
             chegada->dado1 = *elemento;
             chegada->dado2 = evento->dado2;
             chegada->tempo = mundo->tempo_atual;
@@ -226,10 +226,10 @@ int tratar_evento_saida(lef_t *cronologia, evento_t *evento, mundo_t *mundo)
 
 /* procura uma equipe que solucuine a missão
  * devolve -1 caso não exista               */
-int encontrar_equipe_missao(int tam, locais_t **locais, heroi_t **herois, conjunto_t *missao, evento_t *evento)
+int encontrar_equipe_missao(int tam, local_t **locais, heroi_t **herois, conjunto_t *missao, evento_t *evento)
 {
     conjunto_t *uni_hab, **hab_hero;
-    int i, j, card1, card2, posi, tam_max = N_HAB;
+    int i, j, card1, card2, posi, tam_max = N_HABILIDADES;
 
     /* cria um vetor com a união das habilidades dos herois da equipe*/
     hab_hero = instanciar_vetor_cjt(tam, tam_max);
@@ -244,7 +244,7 @@ int encontrar_equipe_missao(int tam, locais_t **locais, heroi_t **herois, conjun
             for (j = 0; j < locais[i]->herois->card; j++)
             {
                 posi = locais[i]->herois->v[j];
-                uni_hab = uniao_cjt(hab_hero[i], herois[posi]->hab);
+                uni_hab = uniao_cjt(hab_hero[i], herois[posi]->habilidades);
                 memcpy(hab_hero[i]->v, uni_hab->v, (tam_max * sizeof(int)));
                 hab_hero[i]->card = uni_hab->card;
                 destroi_cjt(uni_hab);
@@ -290,7 +290,7 @@ int encontrar_equipe_missao(int tam, locais_t **locais, heroi_t **herois, conjun
     return posi;
 }
 
-int tratar_evento_missao(lef_t *cronologia, evento_t *evento, mundo_t *mundo, missoes_t **missoes)
+int tratar_evento_missao(lef_t *cronologia, evento_t *evento, mundo_t *mundo, missao_t **missoes)
 {
     int posi, i, j;
     evento_t *missao;
@@ -322,9 +322,9 @@ int tratar_evento_missao(lef_t *cronologia, evento_t *evento, mundo_t *mundo, mi
         printf("ERRO 6.3: falha ao alocar memória na variável missao.\n");
         return 0;
     }
-    missao->tipo = MISSAO;
+    missao->tipo = TIPO_MISSAO;
     missao->dado1 = evento->dado1;
-    missao->tempo = aleat(mundo->tempo_atual, TEMPO_FIM);
+    missao->tempo = aleat(mundo->tempo_atual, FIM_DO_MUNDO);
     if (!(adiciona_ordem_lef(cronologia, missao)))
     {
         printf("ERRO 6.4: falha ao adicionar o evento missao.\n");

@@ -2,15 +2,14 @@
 #include "liblef.h"
 #include "libconjunto.h"
 
-#define INI 0
-#define TAM_MUNDO 20000
-#define N_HAB 10
-#define TEMPO_FIM 34944
+#define TAMANHO_MUNDO 20000
+#define N_HABILIDADES 10
+#define FIM_DO_MUNDO 34944
 
-#define CHEGADA 0
-#define SAIDA 1
-#define MISSAO 2
-#define FIM 3
+#define TIPO_CHEGADA 0
+#define TIPO_SAIDA 1
+#define TIPO_MISSAO 2
+#define TIPO_FIM 3
 
 typedef struct heroi
 {
@@ -18,7 +17,7 @@ typedef struct heroi
     int paciencia;
     int idade;
     int experiencia;
-    conjunto_t *hab;
+    conjunto_t *habilidades;
 } heroi_t;
 
 typedef struct par_ordenado
@@ -27,7 +26,7 @@ typedef struct par_ordenado
     int y;
 } par_ordenado_t;
 
-typedef struct locais
+typedef struct local
 {
     int id;
     int lotacao_maxima;
@@ -36,7 +35,7 @@ typedef struct locais
     fila_t *fila;
     par_ordenado_t *locallizacao;
 
-} locais_t;
+} local_t;
 
 typedef struct mundo
 {
@@ -45,15 +44,15 @@ typedef struct mundo
     int n_herois;
     int n_locais;
     heroi_t **herois;
-    locais_t **locais;
+    local_t **locais;
     conjunto_t *habilidades;
 } mundo_t;
 
-typedef struct missoes
+typedef struct missao
 {
     int id;
     conjunto_t *missao;
-} missoes_t;
+} missao_t;
 
 /* Responsável por criar o mundo, alocando espaço para o mesmo e inicializando
  * os seus campos.
@@ -64,9 +63,9 @@ mundo_t *destruir_mundo(mundo_t *mundo);
 
 lef_t *instanciar_lef(int n_herois, int n_locais);
 
-missoes_t **instanciar_missoes(lef_t *cronologia, conjunto_t *hab);
+missao_t **instanciar_missoes(lef_t *cronologia, conjunto_t *hab);
 
-missoes_t **destruir_missoes(missoes_t **missoes);
+missao_t **destruir_missoes(missao_t **missoes);
 
 int max(int num1, int num2);
 

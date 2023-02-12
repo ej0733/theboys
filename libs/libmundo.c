@@ -42,7 +42,7 @@ heroi_t **instanciar_herois(mundo_t *mundo)
         heroi[i]->experiencia = 0;
         heroi[i]->paciencia = aleat(0, 100);
         heroi[i]->idade = aleat(18, 100);
-        heroi[i]->hab = cria_subcjt_cjt((mundo->habilidades), aleat(2, 5));
+        heroi[i]->habilidades = cria_subcjt_cjt((mundo->habilidades), aleat(2, 5));
     }
 
     return heroi;
@@ -55,7 +55,7 @@ heroi_t **destruir_herois(heroi_t **herois, int tam)
 
     for (i = 0; i < tam; i++)
     {
-        herois[i]->hab = destroi_cjt(herois[i]->hab);
+        herois[i]->habilidades = destroi_cjt(herois[i]->habilidades);
         free(herois[i]);
         herois[i] = NULL;
     }
@@ -68,11 +68,11 @@ heroi_t **destruir_herois(heroi_t **herois, int tam)
 
 /* cria e retorna uma struct local
  * retorna null em caso de falha*/
-locais_t *instanciar_local(int tam, int id)
+local_t *instanciar_local(int tam, int id)
 {
-    locais_t *local;
+    local_t *local;
     /* aloca espaço para a struct local*/
-    if (!(local = (locais_t *)malloc(sizeof(locais_t))))
+    if (!(local = (local_t *)malloc(sizeof(local_t))))
     {
         printf("ERRO 1.5.2.1: falha ao alocar memória no local.\n");
         return NULL;
@@ -99,12 +99,12 @@ locais_t *instanciar_local(int tam, int id)
 
 /* cria e retorna um vetor de structs locais
  * retorna null em caso de falha                */
-locais_t **instanciar_locais(mundo_t *mundo)
+local_t **instanciar_locais(mundo_t *mundo)
 {
     int i;
-    locais_t **locais;
+    local_t **locais;
 
-    if (!(locais = (locais_t **)malloc(sizeof(locais_t) * mundo->n_locais)))
+    if (!(locais = (local_t **)malloc(sizeof(local_t) * mundo->n_locais)))
     {
         printf("ERRO 1.5.1: falha ao alocar memória no vetor 'locais'.\n");
         return NULL;
@@ -126,7 +126,7 @@ locais_t **instanciar_locais(mundo_t *mundo)
 
 /* desaloca memória de um vetor de structs locais
  * retorna null                                     */
-locais_t **destruir_locais(mundo_t *mundo)
+local_t **destruir_locais(mundo_t *mundo)
 {
     int i;
 
@@ -159,12 +159,12 @@ mundo_t *instanciar_mundo()
     }
 
     mundo->tempo_atual = 0;
-    mundo->n_tamanho_mundo = TAM_MUNDO;
-    mundo->n_herois = N_HAB * 5;
+    mundo->n_tamanho_mundo = TAMANHO_MUNDO;
+    mundo->n_herois = N_HABILIDADES * 5;
     mundo->n_locais = (mundo->n_herois) / 6;
-    mundo->habilidades = cria_cjt(N_HAB);
+    mundo->habilidades = cria_cjt(N_HABILIDADES);
 
-    for (i = 0; i < N_HAB; i++)
+    for (i = 0; i < N_HABILIDADES; i++)
         if (!(insere_cjt(mundo->habilidades, i)))
         {
             printf("ERRO 1.2: falha ao inserir elemento.\n");
@@ -228,8 +228,8 @@ lef_t *instanciar_lef(int n_herois, int n_locais)
         return 0;
     }
 
-    evento->tipo = FIM;
-    evento->tempo = TEMPO_FIM;
+    evento->tipo = TIPO_FIM;
+    evento->tempo = FIM_DO_MUNDO;
 
     if (!(adiciona_inicio_lef(lef, evento)))
     {
@@ -248,7 +248,7 @@ lef_t *instanciar_lef(int n_herois, int n_locais)
             return 0;
         }
 
-        evento->tipo = CHEGADA;
+        evento->tipo = TIPO_CHEGADA;
         evento->dado1 = i;
         evento->dado2 = aleat(0, (n_locais - 1));
         evento->tempo = aleat(0, 96 * 7);
@@ -268,16 +268,16 @@ lef_t *instanciar_lef(int n_herois, int n_locais)
 
 /* cria o vetor de missões
  * retorna null em caso de falha*/
-missoes_t **instanciar_missoes(lef_t *lef, conjunto_t *hab)
+missao_t **instanciar_missoes(lef_t *lef, conjunto_t *hab)
 {
     int i, n_missoes;
     evento_t *evento;
-    missoes_t **missoes;
+    missao_t **missoes;
 
-    n_missoes = TAM_MUNDO / 100;
+    n_missoes = TAMANHO_MUNDO / 100;
 
     /* aloca espaço num vetor de n_missoes ponteiros de missões*/
-    if (!(missoes = (missoes_t **)malloc((n_missoes) * sizeof(missoes_t *))))
+    if (!(missoes = (missao_t **)malloc((n_missoes) * sizeof(missao_t *))))
     {
         printf("ERRO 3.1: falha ao alocar memória no vetor de ponteiros 'missões'.\n");
         return NULL;
@@ -287,7 +287,7 @@ missoes_t **instanciar_missoes(lef_t *lef, conjunto_t *hab)
     for (i = 0; i < n_missoes - 1; i++)
     {
         /* aloca espaço para uma struct missões*/
-        if (!(missoes[i] = (missoes_t *)malloc(sizeof(missoes_t))))
+        if (!(missoes[i] = (missao_t *)malloc(sizeof(missao_t))))
         {
             printf("ERRO 3.2: falha ao alocar memória no ponteiro 'missões+%d'.\n", i);
             return NULL;
@@ -303,9 +303,9 @@ missoes_t **instanciar_missoes(lef_t *lef, conjunto_t *hab)
             return NULL;
         }
 
-        evento->tipo = MISSAO;
+        evento->tipo = TIPO_MISSAO;
         evento->dado1 = i;
-        evento->tempo = aleat(0, TEMPO_FIM);
+        evento->tempo = aleat(0, FIM_DO_MUNDO);
 
         /* adiciona o evento de missão na lef*/
         if (!(adiciona_ordem_lef(lef, evento)))
@@ -323,11 +323,11 @@ missoes_t **instanciar_missoes(lef_t *lef, conjunto_t *hab)
 }
 
 /* libera espaço no vetor de ponteiros de missões*/
-missoes_t **destruir_missoes(missoes_t **missoes)
+missao_t **destruir_missoes(missao_t **missoes)
 {
     int i;
 
-    for (i = 0; i < TAM_MUNDO / 100 - 1; i++)
+    for (i = 0; i < TAMANHO_MUNDO / 100 - 1; i++)
     {
         missoes[i]->missao = destroi_cjt(missoes[i]->missao);
         free(missoes[i]);
