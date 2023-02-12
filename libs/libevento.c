@@ -11,14 +11,17 @@ int calcular_tpl(int paciencia)
 
 int calcular_tdl(mundo_t *mundo, int a, int b, int id)
 {
-    int d, v;
-    int x_a = ((*(mundo->locais + a))->locallizacao)->x;
-    int x_b = ((*(mundo->locais + b))->locallizacao)->x;
-    int y_a = ((*(mundo->locais + a))->locallizacao)->y;
-    int y_b = ((*(mundo->locais + b))->locallizacao)->y;
-    int idade = (*(mundo->herois + id))->idade;
+    int d, v, x_a, x_b, y_a, y_b, idade;
+
+    x_a = mundo->locais[a]->locallizacao->x;
+    x_b = mundo->locais[b]->locallizacao->x;
+    y_a = mundo->locais[a]->locallizacao->y;
+    y_b = mundo->locais[b]->locallizacao->y;
+    idade = mundo->herois[id]->idade;
+
     d = sqrt(pow(x_b - x_a, 2) + pow((y_b - y_a), 2));
     v = 100 - max(0, idade - 40);
+    
     return ((d / v) / 15);
 }
 
@@ -26,14 +29,16 @@ int calcular_tdl(mundo_t *mundo, int a, int b, int id)
  * retorna NULL em caso de falha*/
 conjunto_t **instanciar_vetor_cjt(int tam, int tam2)
 {
-    conjunto_t **v;
     int i;
+    conjunto_t **v;
+
     /* aloca espaço num vetor de tam ponteiros de conjuntos*/
-    if (!(v = malloc(sizeof(conjunto_t *) * tam)))
+    if (!(v = (conjunto_t **)malloc(sizeof(conjunto_t) * tam)))
         return NULL;
+
     /* cria tam2 conjuntos*/
     for (i = 0; i < tam; i++)
-        *(v + i) = cria_cjt(tam2);
+        v[i] = cria_cjt(tam2);
 
     return v;
 }
@@ -42,30 +47,33 @@ conjunto_t **instanciar_vetor_cjt(int tam, int tam2)
 conjunto_t **destruir_vetor_cjt(conjunto_t **v, int tam)
 {
     int i;
+
     for (i = 0; i < tam; i++)
-        *(v + i) = destroi_cjt(*(v + i));
+        v[i] = destroi_cjt(v[i]);
 
     free(v);
+    v = NULL;
+
     return NULL;
 }
 
 int tratar_evento_chegada(lef_t *cronologia, evento_t *evento, mundo_t *mundo)
 {
     evento_t *sai;
-    int tpl;
+    int tpl, n_herois, n_max, paciencia, n_fila;
 
-    int n_herois = (*(mundo->locais + (evento->dado2)))->herois_no_lugar;
-    int n_max = (*(mundo->locais + (evento->dado2)))->lotacao_maxima;
-    int paciencia = (*(mundo->herois + (evento->dado1)))->paciencia;
-    int n_fila = tamanho_fila((*(mundo->locais + (evento->dado2)))->fila);
+    n_herois = mundo->locais[evento->dado2]->herois_no_lugar;
+    n_max = mundo->locais[evento->dado2]->lotacao_maxima;
+    paciencia = mundo->herois[evento->dado1]->paciencia;
+    n_fila = tamanho_fila(mundo->locais[evento->dado2]->fila);
 
     if (n_herois == n_max)
     {
 
         if (paciencia / 4 - n_fila > 0)
         {
-            insere_fila(((*(mundo->locais + (evento->dado2)))->fila), (evento->dado1));
-            printf("FILA%2d\n", tamanho_fila((*(mundo->locais + (evento->dado2)))->fila));
+            insere_fila(mundo->locais[evento->dado2]->fila, evento->dado1);
+            printf("FILA %2d\n", tamanho_fila(mundo->locais[evento->dado2]->fila));
             return 1;
         }
         else
@@ -77,24 +85,27 @@ int tratar_evento_chegada(lef_t *cronologia, evento_t *evento, mundo_t *mundo)
                 printf("ERRO 4.1: falha ao alocar memória na variável sai.\n");
                 return 0;
             }
+
             sai->tipo = SAIDA;
             sai->dado1 = evento->dado1;
             sai->dado2 = evento->dado2;
             sai->tempo = mundo->tempo_atual;
+
             if (!(adiciona_ordem_lef(cronologia, sai)))
             {
                 printf("ERRO 4.2: falha ao adicionar o evento sai.\n");
                 return 0;
             }
+
             free(sai);
             return 1;
         }
     }
 
     printf("ENTRA\n");
-    ((*(mundo->locais + (evento->dado2)))->herois_no_lugar)++;
+    mundo->locais[evento->dado2]->herois_no_lugar++;
 
-    if (!(insere_cjt(((*(mundo->locais + (evento->dado2)))->herois), evento->dado1)))
+    if (!(insere_cjt(mundo->locais[evento->dado2]->herois, evento->dado1)))
     {
         printf("ERRO 4.4: falha ao adicionar heroi.\n");
         return 0;
@@ -109,13 +120,14 @@ int tratar_evento_chegada(lef_t *cronologia, evento_t *evento, mundo_t *mundo)
     sai->tipo = SAIDA;
     sai->dado1 = evento->dado1;
     sai->dado2 = evento->dado2;
-    tpl = calcular_tpl((*(mundo->herois + (evento->dado1)))->paciencia);
-    sai->tempo = (mundo->tempo_atual) + tpl;
+    tpl = calcular_tpl(mundo->herois[evento->dado1]->paciencia);
+    sai->tempo = mundo->tempo_atual + tpl;
     if (!(adiciona_ordem_lef(cronologia, sai)))
     {
         printf("ERRO 2.3: falha ao adicionar o evento sai.\n");
         return 0;
     }
+
     free(sai);
 
     return 1;
@@ -138,7 +150,7 @@ int tratar_evento_saida(lef_t *cronologia, evento_t *evento, mundo_t *mundo)
     /* adiciona os parametros ao evento de chegada*/
     chegada->tipo = CHEGADA;
     chegada->dado1 = evento->dado1;
-    chegada->dado2 = aleat(0, ((mundo->n_locais) - 1));
+    chegada->dado2 = aleat(0, (mundo->n_locais - 1));
     tdl = calcular_tdl(mundo, evento->dado2, chegada->dado2, chegada->dado1);
     chegada->tempo = mundo->tempo_atual + tdl;
 
@@ -153,10 +165,10 @@ int tratar_evento_saida(lef_t *cronologia, evento_t *evento, mundo_t *mundo)
     free(chegada);
 
     /* confere se o herói que está saindo estava dentro do local ou apenas na fila*/
-    if (pertence_cjt(((*(mundo->locais + (evento->dado2)))->herois), evento->dado1))
+    if (pertence_cjt((mundo->locais[evento->dado2]->herois), evento->dado1))
     {
         /* confere se existe uma fila de heróis no local*/
-        if (tamanho_fila((*(mundo->locais + (evento->dado2)))->fila) > 0)
+        if (tamanho_fila(mundo->locais[evento->dado2]->fila) > 0)
         {
             /* aloca espaço para um evento de chegada do herói que está na fila*/
             if (!(chegada = malloc(sizeof(evento_t))))
@@ -173,7 +185,7 @@ int tratar_evento_saida(lef_t *cronologia, evento_t *evento, mundo_t *mundo)
             }
 
             /* retira o id herói da fila e retorna para o ponteiro de inteiro*/
-            if (!(retira_fila((*(mundo->locais + (evento->dado2)))->fila, elemento)))
+            if (!(retira_fila(mundo->locais[evento->dado2]->fila, elemento)))
             {
                 printf("ERRO 5.5: falha ao retirar elemento da fila.\n");
                 return 0;
@@ -201,8 +213,8 @@ int tratar_evento_saida(lef_t *cronologia, evento_t *evento, mundo_t *mundo)
         }
 
         /* altera o número de heróis no local e retira o herói que saiu do conjunto de herois no local*/
-        ((*(mundo->locais + (evento->dado2)))->herois_no_lugar)--;
-        if (!(retira_cjt(((*(mundo->locais + (evento->dado2)))->herois), evento->dado1)))
+        mundo->locais[evento->dado2]->herois_no_lugar--;
+        if (!(retira_cjt(mundo->locais[evento->dado2]->herois, evento->dado1)))
         {
             printf("ERRO 5.7: falha ao retirar elemento do conjunto.\n");
             return 0;
@@ -229,12 +241,12 @@ int encontrar_equipe_missao(int tam, locais_t **locais, heroi_t **herois, conjun
     {
         for (i = 0; i <= (tam - 1); i++)
         {
-            for (j = 0; j < (((*((locais + i)))->herois)->card); j++)
+            for (j = 0; j < locais[i]->herois->card; j++)
             {
-                posi = (*(((*((locais + i)))->herois)->v + j));
-                uni_hab = uniao_cjt(*(hab_hero + i), ((*(herois + posi))->hab));
-                memcpy((*(hab_hero + i))->v, uni_hab->v, (tam_max * sizeof(int)));
-                (*(hab_hero + i))->card = uni_hab->card;
+                posi = locais[i]->herois->v[j];
+                uni_hab = uniao_cjt(hab_hero[i], herois[posi]->hab);
+                memcpy(hab_hero[i]->v, uni_hab->v, (tam_max * sizeof(int)));
+                hab_hero[i]->card = uni_hab->card;
                 destroi_cjt(uni_hab);
             }
         }
@@ -245,7 +257,7 @@ int encontrar_equipe_missao(int tam, locais_t **locais, heroi_t **herois, conjun
     i = 0;
     while ((i < tam) && (posi == -1))
     {
-        if (contido_cjt(missao, *(hab_hero + i)))
+        if (contido_cjt(missao, hab_hero[i]))
             posi = i;
         i++;
     }
@@ -255,8 +267,8 @@ int encontrar_equipe_missao(int tam, locais_t **locais, heroi_t **herois, conjun
     { /* cria e retorna uma struct local
        * retorna null em caso de falha*/
 
-        printf("%6d:MISSAO %3d HAB_EQL %d:", evento->tempo, evento->dado1, ((*(locais + i))->id));
-        imprime_cjt(*(hab_hero + i));
+        printf("%6d:MISSAO %3d HAB_EQL %d:", evento->tempo, evento->dado1, locais[i]->id);
+        imprime_cjt(hab_hero[i]);
     }
     /*caso exista pelo menos uma equipe que possa efetuar a missão
      * confere qual a menor equipe*/
@@ -264,10 +276,10 @@ int encontrar_equipe_missao(int tam, locais_t **locais, heroi_t **herois, conjun
     {
         for (i = posi; i <= (tam - 1); i++)
         {
-            card1 = ((*((locais + i)))->herois)->card;
-            card2 = ((*((locais + posi)))->herois)->card;
+            card1 = locais[i]->herois->card;
+            card2 = locais[posi]->herois->card;
 
-            if ((contido_cjt(missao, *(hab_hero + i))) && ((card1 < card2)))
+            if ((contido_cjt(missao, hab_hero[i])) && ((card1 < card2)))
                 posi = i;
         }
     }
@@ -285,21 +297,21 @@ int tratar_evento_missao(lef_t *cronologia, evento_t *evento, mundo_t *mundo, mi
 
     /* imprime as habilidades necessárias para a missão*/
     printf("HAB_REQ ");
-    imprime_cjt(((*(missoes + (evento->dado1)))->missao));
+    imprime_cjt(missoes[evento->dado1]->missao);
 
     /* verifica se existe um conjunto de heróis que possa realizar a missão
      * retorna a id de 0 até n_locais caso exista e -1 caso contrário*/
-    posi = encontrar_equipe_missao((mundo->n_locais), (mundo->locais), (mundo->herois), ((*(missoes + (evento->dado1)))->missao), evento);
+    posi = encontrar_equipe_missao(mundo->n_locais, mundo->locais, mundo->herois, missoes[evento->dado1]->missao, evento);
 
     if (posi != -1)
     {
-        printf("%6d:MISSAO %3d HER_EQS %d:", evento->tempo, evento->dado1, ((*(mundo->locais + posi))->id));
-        imprime_cjt(((*(mundo->locais + posi)))->herois);
+        printf("%6d:MISSAO %3d HER_EQS %d:", evento->tempo, evento->dado1, mundo->locais[posi]->id);
+        imprime_cjt(mundo->locais[posi]->herois);
 
-        for (i = 0; i < cardinalidade_cjt((((*(mundo->locais + posi)))->herois)); i++)
+        for (i = 0; i < cardinalidade_cjt(mundo->locais[posi]->herois); i++)
         {
-            j = *(((*(mundo->locais + posi))->herois)->v + i);
-            (*(mundo->herois + j))->experiencia++;
+            j = mundo->locais[posi]->herois->v[i];
+            mundo->herois[j]->experiencia++;
         }
         return 1;
     }
@@ -312,7 +324,7 @@ int tratar_evento_missao(lef_t *cronologia, evento_t *evento, mundo_t *mundo, mi
     }
     missao->tipo = MISSAO;
     missao->dado1 = evento->dado1;
-    missao->tempo = aleat((mundo->tempo_atual), TEMPO_FIM);
+    missao->tempo = aleat(mundo->tempo_atual, TEMPO_FIM);
     if (!(adiciona_ordem_lef(cronologia, missao)))
     {
         printf("ERRO 6.4: falha ao adicionar o evento missao.\n");
@@ -329,8 +341,8 @@ void imprime_evento_chegada(evento_t *evento, mundo_t *mundo)
     tempo_atual = evento->tempo;
     id_heroi = evento->dado1;
     id_local = evento->dado2;
-    herois_local = cardinalidade_cjt((*(mundo->locais + (evento->dado2)))->herois);
-    lotacao_maxima = ((*(mundo->locais + (evento->dado2)))->lotacao_maxima);
+    herois_local = cardinalidade_cjt(mundo->locais[evento->dado2]->herois);
+    lotacao_maxima = mundo->locais[evento->dado2]->lotacao_maxima;
 
     printf("%6d:CHEGA HEROI %2d LOCAL %d (%2d/%2d), ", tempo_atual, id_heroi, id_local, herois_local, lotacao_maxima);
 }
@@ -342,8 +354,8 @@ void imprime_evento_saida(evento_t *evento, mundo_t *mundo)
     tempo_atual = evento->tempo;
     id_heroi = evento->dado1;
     id_local = evento->dado2;
-    herois_local = cardinalidade_cjt((*(mundo->locais + (evento->dado2)))->herois);
-    lotacao_maxima = ((*(mundo->locais + (evento->dado2)))->lotacao_maxima);
+    herois_local = cardinalidade_cjt(mundo->locais[evento->dado2]->herois);
+    lotacao_maxima = mundo->locais[evento->dado2]->lotacao_maxima;
 
     printf("%6d:SAIDA HEROI %2d LOCAL %d (%2d/%2d)", tempo_atual, id_heroi, id_local, herois_local, lotacao_maxima);
 }
@@ -363,14 +375,12 @@ void imprime_evento_fim(evento_t *evento, mundo_t *mundo)
     int i, tempo_atual, id_heroi, experiencia;
 
     tempo_atual = evento->tempo;
-
     printf("%6d:FIM\n", tempo_atual);
 
-    for (i = 0; i < (mundo->n_herois); i++)
+    for (i = 0; i < mundo->n_herois; i++)
     {
-        id_heroi = (*(mundo->herois + i))->id;
-        experiencia = (*(mundo->herois + i))->experiencia;
-        
+        id_heroi = mundo->herois[i]->id;
+        experiencia = mundo->herois[i]->experiencia;
         printf("HEROI %2d EXPERIENCIA %2d\n", id_heroi, experiencia);
     }
 }
