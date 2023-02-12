@@ -10,31 +10,27 @@ int max(int num1, int num2)
     return num2 < num1 ? num1 : num2;
 }
 
-/* retorna um valor aleatório entre min e max*/
 int aleat(int min, int max)
 {
     return (min + (rand() % ((max - min + 1))));
 }
 
-/* cria um vetor de ponteiros de herois*/
 heroi_t **instanciar_herois(mundo_t *mundo)
 {
     int i;
     heroi_t **heroi;
 
-    /* aloca espaço no vetor de ponteiros heroi*/
     if (!(heroi = (heroi_t **)malloc(sizeof(heroi_t) * mundo->n_herois)))
     {
-        printf("ERRO 1.4.1: falha ao alocar memória no vetor 'heroi'.\n");
+        printf("ERRO: Não foi possível alocar memória para vetor de heróis.\n");
         return NULL;
     }
 
-    /* aloca espaço e adiciona os valores no ponteiro de herois*/
     for (i = 0; i < mundo->n_herois; i++)
     {
         if (!(heroi[i] = (heroi_t *)malloc(sizeof(heroi_t))))
         {
-            printf("ERRO 1.4.2: falha ao alocar memória no heroi %d.\n", i);
+            printf("ERRO: Não foi possível alocar memória para herói %d.\n", i);
             return NULL;
         }
 
@@ -48,7 +44,6 @@ heroi_t **instanciar_herois(mundo_t *mundo)
     return heroi;
 }
 
-/* destrói um vetor de ponteiros de heróis*/
 heroi_t **destruir_herois(heroi_t **herois, int tam)
 {
     int i;
@@ -66,26 +61,22 @@ heroi_t **destruir_herois(heroi_t **herois, int tam)
     return NULL;
 }
 
-/* cria e retorna uma struct local
- * retorna null em caso de falha*/
 local_t *instanciar_local(int tam, int id)
 {
     local_t *local;
-    /* aloca espaço para a struct local*/
+    
     if (!(local = (local_t *)malloc(sizeof(local_t))))
     {
-        printf("ERRO 1.5.2.1: falha ao alocar memória no local.\n");
+        printf("ERRO: Não foi possível alocar memória para local.\n");
         return NULL;
     }
 
-    /* aloca espaço para a struct de coordenadas do local*/
     if (!(local->locallizacao = (par_ordenado_t *)malloc(sizeof(par_ordenado_t))))
     {
-        printf("ERRO 1.5.2.2: falha ao alocar memória na coordenada.\n");
+        printf("ERRO: Não foi possível alocar memória para localização.\n");
         return NULL;
     }
 
-    /* adiciona os parametros na struct local*/
     local->id = id;
     local->lotacao_maxima = aleat(5, 30);
     local->locallizacao->x = aleat(0, (tam - 1));
@@ -97,8 +88,6 @@ local_t *instanciar_local(int tam, int id)
     return local;
 }
 
-/* cria e retorna um vetor de structs locais
- * retorna null em caso de falha                */
 local_t **instanciar_locais(mundo_t *mundo)
 {
     int i;
@@ -106,7 +95,7 @@ local_t **instanciar_locais(mundo_t *mundo)
 
     if (!(locais = (local_t **)malloc(sizeof(local_t) * mundo->n_locais)))
     {
-        printf("ERRO 1.5.1: falha ao alocar memória no vetor 'locais'.\n");
+        printf("ERRO: Não foi possível alocar memória para vetor de locais.\n");
         return NULL;
     }
 
@@ -116,7 +105,7 @@ local_t **instanciar_locais(mundo_t *mundo)
 
         if (locais[i] == NULL)
         {
-            printf("ERRO 1.5.2: falha ao alocar memória no vetor 'locais+%d'.\n", i);
+            printf("ERRO: Não foi possível alocar memória para local %d.\n", i);
             return NULL;
         }
     }
@@ -124,8 +113,6 @@ local_t **instanciar_locais(mundo_t *mundo)
     return locais;
 }
 
-/* desaloca memória de um vetor de structs locais
- * retorna null                                     */
 local_t **destruir_locais(mundo_t *mundo)
 {
     int i;
@@ -154,7 +141,7 @@ mundo_t *instanciar_mundo()
 
     if (!(mundo = malloc(sizeof(mundo_t))))
     {
-        printf("ERRO 1.1: falha ao alocar memória na variável mundo.\n");
+        printf("ERRO: Não foi possível alocar memória para o mundo.\n");
         return NULL;
     }
 
@@ -167,13 +154,13 @@ mundo_t *instanciar_mundo()
     for (i = 0; i < N_HABILIDADES; i++)
         if (!(insere_cjt(mundo->habilidades, i)))
         {
-            printf("ERRO 1.2: falha ao inserir elemento.\n");
+            printf("ERRO: Não foi possível inserir habilidade %d no conjunto de habilidades.\n", i);
             return NULL;
         }
 
     if (mundo->habilidades == NULL)
     {
-        printf("ERRO 1.3: falha na função cria_cjt.\n");
+        printf("ERRO: Não foi possível alocar memória para o conjunto de habilidades.\n");
         return NULL;
     }
 
@@ -181,7 +168,7 @@ mundo_t *instanciar_mundo()
 
     if (mundo->herois == NULL)
     {
-        printf("ERRO 1.4: falha na função cria_herois.\n");
+        printf("ERRO: Não foi possível alocar memória para o vetor de heróis.\n");
         return NULL;
     }
 
@@ -189,7 +176,7 @@ mundo_t *instanciar_mundo()
 
     if (mundo->locais == NULL)
     {
-        printf("ERRO 1.5: falha na função cria_locais.\n");
+        printf("ERRO: Não foi possível alocar memória para o vetor de locais.\n");
         return NULL;
     }
 
@@ -218,13 +205,13 @@ lef_t *instanciar_lef(int n_herois, int n_locais)
 
     if (lef == NULL)
     {
-        printf("ERRO 2.1: falha ao alocar memória na variável lef.\n");
+        printf("ERRO: Não foi possível alocar memória para LEF.\n");
         return 0;
     }
 
     if (!(evento = (evento_t *)malloc(sizeof(evento_t))))
     {
-        printf("ERRO 2.2: falha ao alocar memória na variável evento.\n");
+        printf("ERRO: Não foi possível alocar memória para evento.\n");
         return 0;
     }
 
@@ -233,7 +220,7 @@ lef_t *instanciar_lef(int n_herois, int n_locais)
 
     if (!(adiciona_inicio_lef(lef, evento)))
     {
-        printf("ERRO 2.3: falha ao adicionar o evento evento.\n");
+        printf("ERRO: Houve um problema ao adicionar evento a LEF.\n");
         return 0;
     }
 
@@ -244,7 +231,7 @@ lef_t *instanciar_lef(int n_herois, int n_locais)
     {
         if (!(evento = (evento_t *)malloc(sizeof(evento_t))))
         {
-            printf("ERRO 2.4: falha ao alocar memória na variável chegada.\n");
+            printf("ERRO: Não foi possível alocar memória para evento.\n");
             return 0;
         }
 
@@ -255,7 +242,7 @@ lef_t *instanciar_lef(int n_herois, int n_locais)
 
         if (!(adiciona_ordem_lef(lef, evento)))
         {
-            printf("ERRO 2.5: falha ao adicionar o evento chegada %d.\n", i);
+            printf("ERRO: Houve um problema ao adicionar evento a LEF.\n");
             return NULL;
         }
 
@@ -266,8 +253,6 @@ lef_t *instanciar_lef(int n_herois, int n_locais)
     return lef;
 }
 
-/* cria o vetor de missões
- * retorna null em caso de falha*/
 missao_t **instanciar_missoes(lef_t *lef, conjunto_t *hab)
 {
     int i, n_missoes;
@@ -276,30 +261,26 @@ missao_t **instanciar_missoes(lef_t *lef, conjunto_t *hab)
 
     n_missoes = TAMANHO_MUNDO / 100;
 
-    /* aloca espaço num vetor de n_missoes ponteiros de missões*/
     if (!(missoes = (missao_t **)malloc((n_missoes) * sizeof(missao_t *))))
     {
-        printf("ERRO 3.1: falha ao alocar memória no vetor de ponteiros 'missões'.\n");
+        printf("ERRO: Não foi possível alocar memória para o vetor de missões.\n");
         return NULL;
     }
 
-    /* cria n_missoes de missões*/
     for (i = 0; i < n_missoes - 1; i++)
     {
-        /* aloca espaço para uma struct missões*/
         if (!(missoes[i] = (missao_t *)malloc(sizeof(missao_t))))
         {
-            printf("ERRO 3.2: falha ao alocar memória no ponteiro 'missões+%d'.\n", i);
+            printf("ERRO: Não foi possível alocar memória para a missão %d.\n", i);
             return NULL;
         }
 
         missoes[i]->id = i;
         missoes[i]->missao = cria_subcjt_cjt(hab, (aleat(3, 6)));
 
-        /* aloca espaço para um evento*/
         if (!(evento = (evento_t *)malloc(sizeof(evento_t))))
         {
-            printf("ERRO 3.3: falha ao alocar memória na variável evento.\n");
+            printf("ERRO: Não foi possível alocar memória para o evento de missão.\n");
             return NULL;
         }
 
@@ -307,14 +288,12 @@ missao_t **instanciar_missoes(lef_t *lef, conjunto_t *hab)
         evento->dado1 = i;
         evento->tempo = aleat(0, FIM_DO_MUNDO);
 
-        /* adiciona o evento de missão na lef*/
         if (!(adiciona_ordem_lef(lef, evento)))
         {
-            printf("ERRO 3.4: falha ao adicionar o evento chegada.\n");
+            printf("ERRO: Houve um problema ao adicionar evento a LEF.\n");
             return NULL;
         }
 
-        /* desaloca o espaço do evento demissão*/
         free(evento);
         evento = NULL;
     }
@@ -322,7 +301,6 @@ missao_t **instanciar_missoes(lef_t *lef, conjunto_t *hab)
     return missoes;
 }
 
-/* libera espaço no vetor de ponteiros de missões*/
 missao_t **destruir_missoes(missao_t **missoes)
 {
     int i;
