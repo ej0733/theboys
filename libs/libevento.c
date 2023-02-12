@@ -9,96 +9,93 @@ int calcular_tpl(int paciencia)
     return (max(1, (paciencia / 10) + (aleat(-2, 6))));
 }
 
-int calcular_tdl(mundo_t *mundo, int a, int b, int id)
+int calcular_tdl(mundo_t *mundo, int id_local, int id_local_dest, int id_heroi)
 {
-    int d, v, x_a, x_b, y_a, y_b, idade;
+    int distancia, velocidade, x1, x2, y1, y2;
 
-    x_a = mundo->locais[a]->locallizacao->x;
-    x_b = mundo->locais[b]->locallizacao->x;
-    y_a = mundo->locais[a]->locallizacao->y;
-    y_b = mundo->locais[b]->locallizacao->y;
-    idade = mundo->herois[id]->idade;
+    x1 = mundo->locais[id_local]->locallizacao->x;
+    x2 = mundo->locais[id_local_dest]->locallizacao->x;
+    y1 = mundo->locais[id_local]->locallizacao->y;
+    y2 = mundo->locais[id_local_dest]->locallizacao->y;
 
-    d = sqrt(pow(x_b - x_a, 2) + pow((y_b - y_a), 2));
-    v = 100 - max(0, idade - 40);
-    
-    return ((d / v) / 15);
+    distancia = sqrt(pow(x2 - x1, 2) + pow((y2 - y1), 2));
+    velocidade = 100 - max(0, mundo->herois[id_heroi]->idade - 40);
+
+    return ((distancia / velocidade) / 15);
 }
 
-/* cria vetor de conjuntos
- * retorna NULL em caso de falha*/
-conjunto_t **instanciar_vetor_cjt(int tam, int tam2)
+conjunto_t **instanciar_vetor_cjt(int tamanho, int tamanho2)
 {
     int i;
-    conjunto_t **v;
+    conjunto_t **vetor_cjt;
 
-    /* aloca espaço num vetor de tam ponteiros de conjuntos*/
-    if (!(v = (conjunto_t **)malloc(sizeof(conjunto_t) * tam)))
+    if (!(vetor_cjt = (conjunto_t **)malloc(sizeof(conjunto_t) * tamanho)))
         return NULL;
 
-    /* cria tam2 conjuntos*/
-    for (i = 0; i < tam; i++)
-        v[i] = cria_cjt(tam2);
+    for (i = 0; i < tamanho; i++)
+        vetor_cjt[i] = cria_cjt(tamanho2);
 
-    return v;
+    return vetor_cjt;
 }
 
-/* libera espaço alocado num vetor de tam ponteiros de conjuntos*/
-conjunto_t **destruir_vetor_cjt(conjunto_t **v, int tam)
+conjunto_t **destruir_vetor_cjt(conjunto_t **vetor_cjt, int tamanho)
 {
     int i;
 
-    for (i = 0; i < tam; i++)
-        v[i] = destroi_cjt(v[i]);
+    for (i = 0; i < tamanho; i++)
+        vetor_cjt[i] = destroi_cjt(vetor_cjt[i]);
 
-    free(v);
-    v = NULL;
+    free(vetor_cjt);
+    vetor_cjt = NULL;
 
     return NULL;
 }
 
-int tratar_evento_chegada(lef_t *cronologia, evento_t *evento, mundo_t *mundo)
+int tratar_evento_chegada(lef_t *lef, evento_t *evento, mundo_t *mundo)
 {
-    evento_t *sai;
-    int tpl, n_herois, n_max, paciencia, n_fila;
+    evento_t *evento_saida;
+    int tpl, num_herois_no_lugar, num_lotacao_max, paciencia_heroi, num_tamanho_fila;
 
-    n_herois = mundo->locais[evento->dado2]->herois_no_lugar;
-    n_max = mundo->locais[evento->dado2]->lotacao_maxima;
-    paciencia = mundo->herois[evento->dado1]->paciencia;
-    n_fila = tamanho_fila(mundo->locais[evento->dado2]->fila);
+    num_herois_no_lugar = mundo->locais[evento->dado2]->herois_no_lugar;
+    num_lotacao_max = mundo->locais[evento->dado2]->lotacao_maxima;
+    paciencia_heroi = mundo->herois[evento->dado1]->paciencia;
+    num_tamanho_fila = tamanho_fila(mundo->locais[evento->dado2]->fila);
 
-    if (n_herois == n_max)
+    if (num_herois_no_lugar == num_lotacao_max)
     {
 
-        if (paciencia / 4 - n_fila > 0)
+        if (paciencia_heroi / 4 - num_tamanho_fila > 0)
         {
             insere_fila(mundo->locais[evento->dado2]->fila, evento->dado1);
             printf("FILA %2d\n", tamanho_fila(mundo->locais[evento->dado2]->fila));
-            return 1;
+
+            return SUCCESS;
         }
         else
         {
             printf("DESISTE\n");
 
-            if (!(sai = malloc(sizeof(evento_t))))
+            if (!(evento_saida = (evento_t *)malloc(sizeof(evento_t))))
             {
-                printf("ERRO 4.1: falha ao alocar memória na variável sai.\n");
-                return 0;
+                printf("ERRO: Não foi possível alocar memória para o evento de saída.\n");
+                return FAILURE;
             }
 
-            sai->tipo = TIPO_SAIDA;
-            sai->dado1 = evento->dado1;
-            sai->dado2 = evento->dado2;
-            sai->tempo = mundo->tempo_atual;
+            evento_saida->tipo = TIPO_SAIDA;
+            evento_saida->dado1 = evento->dado1;
+            evento_saida->dado2 = evento->dado2;
+            evento_saida->tempo = mundo->tempo_atual;
 
-            if (!(adiciona_ordem_lef(cronologia, sai)))
+            if (!(adiciona_ordem_lef(lef, evento_saida)))
             {
-                printf("ERRO 4.2: falha ao adicionar o evento sai.\n");
-                return 0;
+                printf("ERRO: Houve um erro ao adicionar o evento de saída.\n");
+                return FAILURE;
             }
 
-            free(sai);
-            return 1;
+            free(evento_saida);
+            evento_saida = NULL;
+
+            return SUCCESS;
         }
     }
 
@@ -107,193 +104,188 @@ int tratar_evento_chegada(lef_t *cronologia, evento_t *evento, mundo_t *mundo)
 
     if (!(insere_cjt(mundo->locais[evento->dado2]->herois, evento->dado1)))
     {
-        printf("ERRO 4.4: falha ao adicionar heroi.\n");
-        return 0;
+        printf("ERRO: Houve um erro ao adicionar o herói ao conjunto de heróis do local.\n");
+        return FAILURE;
     }
 
-    if (!(sai = malloc(sizeof(evento_t))))
+    if (!(evento_saida = (evento_t *)malloc(sizeof(evento_t))))
     {
-        printf("ERRO 4.1: falha ao alocar memória na variável sai.\n");
-        return 0;
+        printf("ERRO: Não foi possível alocar memória para o evento de saída.\n");
+        return FAILURE;
     }
 
-    sai->tipo = TIPO_SAIDA;
-    sai->dado1 = evento->dado1;
-    sai->dado2 = evento->dado2;
+    evento_saida->tipo = TIPO_SAIDA;
+    evento_saida->dado1 = evento->dado1;
+    evento_saida->dado2 = evento->dado2;
     tpl = calcular_tpl(mundo->herois[evento->dado1]->paciencia);
-    sai->tempo = mundo->tempo_atual + tpl;
-    if (!(adiciona_ordem_lef(cronologia, sai)))
+    evento_saida->tempo = mundo->tempo_atual + tpl;
+    ;
+
+    if (!(adiciona_ordem_lef(lef, evento_saida)))
     {
-        printf("ERRO 2.3: falha ao adicionar o evento sai.\n");
-        return 0;
+        printf("ERRO: Houve um erro ao adicionar o evento de saída.\n");
+        return FAILURE;
     }
 
-    free(sai);
+    free(evento_saida);
+    evento_saida = NULL;
 
-    return 1;
+    return SUCCESS;
 }
 
-/* trata o evento saída
- * retorna 1 em caso de sucesso e 0 em caso de falha*/
-int tratar_evento_saida(lef_t *cronologia, evento_t *evento, mundo_t *mundo)
+int tratar_evento_saida(lef_t *lef, evento_t *evento, mundo_t *mundo)
 {
-    evento_t *chegada;
     int *elemento, tdl;
+    evento_t *evento_chegada;
 
-    /* aloca espaço para um evento de chegada do herói que está saindo*/
-    if (!(chegada = malloc(sizeof(evento_t))))
+    if (!(evento_chegada = (evento_t *)malloc(sizeof(evento_t))))
     {
-        printf("ERRO 5.1: falha ao alocar memória na variável chegada.\n");
-        return 0;
+        printf("ERRO: Não foi possível alocar memória para o evento de chegada.\n");
+        return FAILURE;
     }
 
-    /* adiciona os parametros ao evento de chegada*/
-    chegada->tipo = TIPO_CHEGADA;
-    chegada->dado1 = evento->dado1;
-    chegada->dado2 = aleat(0, (mundo->n_locais - 1));
-    tdl = calcular_tdl(mundo, evento->dado2, chegada->dado2, chegada->dado1);
-    chegada->tempo = mundo->tempo_atual + tdl;
+    evento_chegada->tipo = TIPO_CHEGADA;
+    evento_chegada->dado1 = evento->dado1;
+    evento_chegada->dado2 = aleat(0, mundo->n_locais - 1);
+    tdl = calcular_tdl(mundo, evento->dado2, evento_chegada->dado2, evento_chegada->dado1);
+    evento_chegada->tempo = mundo->tempo_atual + tdl;
+    ;
 
-    /* adiciona em ordem o evento chegada na lista de eventos futuros cronologia*/
-    if (!(adiciona_ordem_lef(cronologia, chegada)))
+    if (!(adiciona_ordem_lef(lef, evento_chegada)))
     {
-        printf("ERRO 5.2: falha ao adicionar o evento chegada.\n");
-        return 0;
+        printf("ERRO: Houve um erro ao adicionar o evento de chegada.\n");
+        return FAILURE;
     }
 
-    /* libera espaço alocado no evento chegada*/
-    free(chegada);
+    free(evento_chegada);
+    evento_chegada = NULL;
 
-    /* confere se o herói que está saindo estava dentro do local ou apenas na fila*/
     if (pertence_cjt((mundo->locais[evento->dado2]->herois), evento->dado1))
     {
-        /* confere se existe uma fila de heróis no local*/
         if (tamanho_fila(mundo->locais[evento->dado2]->fila) > 0)
         {
-            /* aloca espaço para um evento de chegada do herói que está na fila*/
-            if (!(chegada = malloc(sizeof(evento_t))))
+            if (!(evento_chegada = (evento_t *)malloc(sizeof(evento_t))))
             {
-                printf("ERRO 5.3: falha ao alocar memória na variável chegada.\n");
-                return 0;
+                printf("ERRO: Não foi possível alocar memória para o evento de chegada.\n");
+                return FAILURE;
             }
 
-            /* aloca espaço para um ponteiro de inteiro*/
-            if (!(elemento = malloc(sizeof(int))))
+            if (!(elemento = (int *)malloc(sizeof(int))))
             {
-                printf("ERRO 5.4: falha ao alocar memória na variável elemento.\n");
-                return 0;
+                printf("ERRO: Não foi possível alocar memória para o elemento da fila.\n");
+                return FAILURE;
             }
 
-            /* retira o id herói da fila e retorna para o ponteiro de inteiro*/
             if (!(retira_fila(mundo->locais[evento->dado2]->fila, elemento)))
             {
-                printf("ERRO 5.5: falha ao retirar elemento da fila.\n");
-                return 0;
+                printf("ERROR: Houve um problema ao retirar o elemento da fila.\n");
+                return FAILURE;
             }
 
-            /* adiciona parametros para o evento de chegada para o herói que está na fila*/
-            chegada->tipo = TIPO_CHEGADA;
-            chegada->dado1 = *elemento;
-            chegada->dado2 = evento->dado2;
-            chegada->tempo = mundo->tempo_atual;
+            evento_chegada->tipo = TIPO_CHEGADA;
+            evento_chegada->dado1 = *elemento;
+            evento_chegada->dado2 = evento->dado2;
+            evento_chegada->tempo = mundo->tempo_atual;
 
-            /* adiciona evento chegada no inicio da lista de eventos futuros cronologia*/
-            if (!(adiciona_inicio_lef(cronologia, chegada)))
+            if (!(adiciona_inicio_lef(lef, evento_chegada)))
             {
-                printf("ERRO 5.6: falha ao adicionar o evento chegada.\n");
-                return 0;
+                printf("ERRO: Houve um problema ao adicionar o evento de chegada.\n");
+                return FAILURE;
             }
 
-            /* imprime o resto da menssagem*/
             printf(", REMOVE FILA HEROI %2d", *elemento);
 
-            /* desaloca memórias alocadas*/
             free(elemento);
-            free(chegada);
+            free(evento_chegada);
+
+            elemento = NULL;
+            evento_chegada = NULL;
         }
 
-        /* altera o número de heróis no local e retira o herói que saiu do conjunto de herois no local*/
         mundo->locais[evento->dado2]->herois_no_lugar--;
+
         if (!(retira_cjt(mundo->locais[evento->dado2]->herois, evento->dado1)))
         {
-            printf("ERRO 5.7: falha ao retirar elemento do conjunto.\n");
-            return 0;
+            printf("ERRO: Houve um erro ao retirar o herói do conjunto de heróis do local.\n");
+            return FAILURE;
         }
     }
+
     printf("\n");
-    return 1;
+    return SUCCESS;
 }
 
 /* procura uma equipe que solucuine a missão
  * devolve -1 caso não exista               */
-int encontrar_equipe_missao(int tam, local_t **locais, heroi_t **herois, conjunto_t *missao, evento_t *evento)
+int encontrar_equipe_missao(int tamanho, local_t **locais, heroi_t **herois, conjunto_t *missao, evento_t *evento)
 {
-    conjunto_t *uni_hab, **hab_hero;
-    int i, j, card1, card2, posi, tam_max = N_HABILIDADES;
+    conjunto_t *uniao_habilidade_cjt, **habilidades_herois_cjt;
+    int i, j, card1, card2, posicao_equipe, tamanho_max = N_HABILIDADES;
 
     /* cria um vetor com a união das habilidades dos herois da equipe*/
-    hab_hero = instanciar_vetor_cjt(tam, tam_max);
+    habilidades_herois_cjt = instanciar_vetor_cjt(tamanho, tamanho_max);
 
     /*faz a união dos conjuntos de habilidades dos herois
      * e guarda os valores no vetor de habilidad cria e retorna uma struct local
     retorna null em caso de falha*/
-    if (tam > 0)
+    if (tamanho > 0)
     {
-        for (i = 0; i <= (tam - 1); i++)
+        for (i = 0; i < tamanho; i++)
         {
-            for (j = 0; j < locais[i]->herois->card; j++)
+            for (j = 0; j < cardinalidade_cjt(locais[i]->herois); j++)
             {
-                posi = locais[i]->herois->v[j];
-                uni_hab = uniao_cjt(hab_hero[i], herois[posi]->habilidades);
-                memcpy(hab_hero[i]->v, uni_hab->v, (tam_max * sizeof(int)));
-                hab_hero[i]->card = uni_hab->card;
-                destroi_cjt(uni_hab);
+                posicao_equipe = locais[i]->herois->v[j];
+                uniao_habilidade_cjt = uniao_cjt(habilidades_herois_cjt[i], herois[posicao_equipe]->habilidades);
+                memcpy(habilidades_herois_cjt[i]->v, uniao_habilidade_cjt->v, (tamanho_max * sizeof(int)));
+                habilidades_herois_cjt[i]->card = uniao_habilidade_cjt->card;
+                destroi_cjt(uniao_habilidade_cjt);
             }
         }
     }
 
     /* verifica se existe pelo menos uma equipe que possa efetuar a missão*/
-    posi = -1;
     i = 0;
-    while ((i < tam) && (posi == -1))
+    posicao_equipe = NOT_FOUND;
+
+    while ((i < tamanho) && (posicao_equipe == NOT_FOUND))
     {
-        if (contido_cjt(missao, hab_hero[i]))
-            posi = i;
+        if (contido_cjt(missao, habilidades_herois_cjt[i]))
+            posicao_equipe = i;
         i++;
     }
 
     /* Imprime os conjuntos de habilidades de herois*/
-    for (i = 0; i <= (tam - 1); i++)
+    for (i = 0; i < tamanho; i++)
     { /* cria e retorna uma struct local
        * retorna null em caso de falha*/
 
-        printf("%6d:MISSAO %3d HAB_EQL %d:", evento->tempo, evento->dado1, locais[i]->id);
-        imprime_cjt(hab_hero[i]);
+        printf("%6d:MISSAO %2d HAB_EQL %d:", evento->tempo, evento->dado1, locais[i]->id);
+        imprime_cjt(habilidades_herois_cjt[i]);
     }
     /*caso exista pelo menos uma equipe que possa efetuar a missão
      * confere qual a menor equipe*/
-    if (posi != -1)
+    if (posicao_equipe != NOT_FOUND)
     {
-        for (i = posi; i <= (tam - 1); i++)
+        for (i = posicao_equipe; i < tamanho; i++)
         {
             card1 = locais[i]->herois->card;
-            card2 = locais[posi]->herois->card;
+            card2 = locais[posicao_equipe]->herois->card;
 
-            if ((contido_cjt(missao, hab_hero[i])) && ((card1 < card2)))
-                posi = i;
+            if ((contido_cjt(missao, habilidades_herois_cjt[i])) && ((card1 < card2)))
+                posicao_equipe = i;
         }
     }
 
     /* libera o vetor de ponteiros de habilidades dos herois*/
-    hab_hero = destruir_vetor_cjt(hab_hero, tam);
+    habilidades_herois_cjt = destruir_vetor_cjt(habilidades_herois_cjt, tamanho);
 
-    return posi;
+    return posicao_equipe;
 }
 
-int tratar_evento_missao(lef_t *cronologia, evento_t *evento, mundo_t *mundo, missao_t **missoes)
+int tratar_evento_missao(lef_t *lef, evento_t *evento, mundo_t *mundo, missao_t **missoes)
 {
-    int posi, i, j;
-    evento_t *missao;
+    int posicao_equipe, i, j;
+    evento_t *evento_missao;
 
     /* imprime as habilidades necessárias para a missão*/
     printf("HAB_REQ ");
@@ -301,37 +293,44 @@ int tratar_evento_missao(lef_t *cronologia, evento_t *evento, mundo_t *mundo, mi
 
     /* verifica se existe um conjunto de heróis que possa realizar a missão
      * retorna a id de 0 até n_locais caso exista e -1 caso contrário*/
-    posi = encontrar_equipe_missao(mundo->n_locais, mundo->locais, mundo->herois, missoes[evento->dado1]->missao, evento);
+    posicao_equipe = encontrar_equipe_missao(mundo->n_locais, mundo->locais, mundo->herois, missoes[evento->dado1]->missao, evento);
 
-    if (posi != -1)
+    if (posicao_equipe != NOT_FOUND)
     {
-        printf("%6d:MISSAO %3d HER_EQS %d:", evento->tempo, evento->dado1, mundo->locais[posi]->id);
-        imprime_cjt(mundo->locais[posi]->herois);
+        printf("%6d:MISSAO %2d HER_EQS %d:", evento->tempo, evento->dado1, mundo->locais[posicao_equipe]->id);
+        imprime_cjt(mundo->locais[posicao_equipe]->herois);
 
-        for (i = 0; i < cardinalidade_cjt(mundo->locais[posi]->herois); i++)
+        for (i = 0; i < cardinalidade_cjt(mundo->locais[posicao_equipe]->herois); i++)
         {
-            j = mundo->locais[posi]->herois->v[i];
+            j = mundo->locais[posicao_equipe]->herois->v[i];
             mundo->herois[j]->experiencia++;
         }
-        return 1;
+
+        return SUCCESS;
     }
 
-    printf("%6d:MISSAO %3d IMPOSSIVEL\n", evento->tempo, evento->dado1);
-    if (!(missao = malloc(sizeof(evento_t))))
+    printf("%6d:MISSAO %2d IMPOSSIVEL\n", evento->tempo, evento->dado1);
+
+    if (!(evento_missao = (evento_t *)malloc(sizeof(evento_t))))
     {
-        printf("ERRO 6.3: falha ao alocar memória na variável missao.\n");
-        return 0;
+        printf("ERRO: Não foi possível alocar memória para o evento missao.\n");
+        return FAILURE;
     }
-    missao->tipo = TIPO_MISSAO;
-    missao->dado1 = evento->dado1;
-    missao->tempo = aleat(mundo->tempo_atual, FIM_DO_MUNDO);
-    if (!(adiciona_ordem_lef(cronologia, missao)))
+
+    evento_missao->tipo = TIPO_MISSAO;
+    evento_missao->dado1 = evento->dado1;
+    evento_missao->tempo = aleat(mundo->tempo_atual, FIM_DO_MUNDO);
+
+    if (!(adiciona_ordem_lef(lef, evento_missao)))
     {
-        printf("ERRO 6.4: falha ao adicionar o evento missao.\n");
-        return 0;
+        printf("ERRO: Houve um problema ao adicionar o evento missao na lista de eventos.\n");
+        return FAILURE;
     }
-    free(missao);
-    return 1;
+
+    free(evento_missao);
+    evento_missao = NULL;
+
+    return SUCCESS;
 }
 
 void imprime_evento_chegada(evento_t *evento, mundo_t *mundo)
