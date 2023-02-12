@@ -1,5 +1,9 @@
 #include "libmundo.h"
 
+#define SUCCESS 1
+#define FAILURE 0
+#define NOT_FOUND -1
+
 int tratar_evento_chegada(lef_t *cronologia, evento_t *evento, mundo_t *mundo);
 
 int tratar_evento_saida(lef_t *cronologia, evento_t *evento, mundo_t *mundo);
