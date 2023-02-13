@@ -8,9 +8,12 @@
 fila_t *cria_fila()
 {
     fila_t *fila;
-    if (!(fila = malloc(sizeof(fila_t))))
+
+    if (!(fila = (fila_t *)malloc(sizeof(fila_t))))
         return NULL;
+
     fila->tamanho = 0;
+
     return fila;
 }
 
@@ -19,16 +22,21 @@ fila_t *cria_fila()
  */
 fila_t *destroi_fila(fila_t *f)
 {
-    nodo_f_t *nodo, *nodo2;
     int i;
+    nodo_f_t *nodo, *aux;
+
     nodo = f->ini;
+
     for (i = 0; i < f->tamanho; i++)
     {
-        nodo2 = nodo->prox;
+        aux = nodo->prox;
         free(nodo);
-        nodo = nodo2;
+        nodo = aux;
     }
+
     free(f);
+    f = NULL;
+
     return NULL;
 }
 
@@ -37,9 +45,7 @@ fila_t *destroi_fila(fila_t *f)
  */
 int fila_vazia(fila_t *f)
 {
-    if (f->tamanho == 0)
-        return 1;
-    return 0;
+    return f->tamanho == 0;
 }
 
 /*
@@ -58,21 +64,24 @@ int insere_fila(fila_t *f, int elemento)
 {
     nodo_f_t *nodo;
 
-    if (!(nodo = malloc(sizeof(nodo_f_t))))
+    if (!(nodo = (nodo_f_t *)malloc(sizeof(nodo_f_t))))
         return 0;
+
     nodo->chave = elemento;
 
-    if (f->tamanho == 0)
+    if (fila_vazia(f))
     {
         f->ini = nodo;
         f->fim = nodo;
         f->tamanho++;
+
         return 1;
     }
 
-    (f->fim)->prox = nodo;
+    f->fim->prox = nodo;
     f->fim = nodo;
     f->tamanho++;
+    
     return 1;
 }
 
@@ -82,32 +91,41 @@ int insere_fila(fila_t *f, int elemento)
  */
 int retira_fila(fila_t *f, int *elemento)
 {
-    nodo_f_t *nodo2;
+    nodo_f_t *aux;
 
-    if (f->tamanho == 0)
+    if (fila_vazia(f))
         return 0;
-    *elemento = (f->ini)->chave;
-    nodo2 = f->ini;
-    f->ini = (f->ini)->prox;
-    free(nodo2);
+        
+    *elemento = f->ini->chave;
+    aux = f->ini;
+    f->ini = f->ini->prox;
+    
+    free(aux);
+    aux = NULL;
+
     f->tamanho--;
+    
     return 1;
 }
 
 /* para depuracao */
 void imprime_fila(fila_t *f)
 {
-    nodo_f_t *nodo2;
     int i;
-    nodo2 = f->ini;
+    nodo_f_t *aux;
+
+    aux = f->ini;
+    
     for (i = 1; i <= f->tamanho; i++)
     {
-        printf("%d", nodo2->chave);
+        printf("%d", aux->chave);
+    
         if (i < f->tamanho)
         {
-            nodo2 = nodo2->prox;
+            aux = aux->prox;
             printf(" ");
         }
     }
+    
     printf("\n");
 }
