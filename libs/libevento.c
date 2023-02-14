@@ -42,6 +42,88 @@ int calcular_tdl(mundo_t *mundo, int id_local, int id_local_dest, int id_heroi)
 }
 
 /*
+ * Função que instancia um evento de chegada.
+ * Recebe como parâmetro o id do herói, o id do local e o tempo atual.
+ * Retorna o evento instanciado.
+ */
+evento_t *instanciar_evento_chegada(int id_heroi, int id_local, int tempo_atual)
+{
+    evento_t *evento;
+
+    /* Aloca memória para o evento, retornando NULL caso não seja possível alocar memória */
+    if (!(evento = (evento_t *)malloc(sizeof(evento_t))))
+        return NULL;
+
+    /* Define o tipo do evento como TIPO_CHEGADA */
+    evento->tipo = TIPO_CHEGADA;
+
+    /* Define dado1 como o id do herói */
+    evento->dado1 = id_heroi;
+
+    /* Define dado2 como o id do local */
+    evento->dado2 = id_local;
+
+    /* Define tempo como o tempo atual */
+    evento->tempo = tempo_atual;
+
+    /* Retorna o evento instanciado */
+    return evento;
+}
+
+/*
+ * Função que instancia um evento de saída.
+ * Recebe como parâmetro o id do herói, o id do local e o tempo atual.
+ * Retorna o evento instanciado.
+ */
+evento_t *instanciar_evento_saida(int id_heroi, int id_local, int tempo_atual)
+{
+    evento_t *evento;
+
+    /* Aloca memória para o evento, retornando NULL caso não seja possível alocar memória */
+    if (!(evento = (evento_t *)malloc(sizeof(evento_t))))
+        return NULL;
+
+    /* Define o tipo do evento como TIPO_SAIDA */
+    evento->tipo = TIPO_SAIDA;
+
+    /* Define dado1 como o id do herói */
+    evento->dado1 = id_heroi;
+
+    /* Define dado2 como o id do local */
+    evento->dado2 = id_local;
+
+    /* Define tempo como o tempo atual */
+    evento->tempo = tempo_atual;
+
+    /* Retorna o evento instanciado */
+    return evento;
+}
+
+evento_t *instanciar_evento_missao(int id_missao, int tempo_atual)
+{
+    evento_t *evento;
+
+    /* Aloca memória para o evento, retornando NULL caso não seja possível alocar memória */
+    if (!(evento = (evento_t *)malloc(sizeof(evento_t))))
+        return NULL;
+
+    /* Define o tipo do evento como TIPO_MISSAO */
+    evento->tipo = TIPO_MISSAO;
+
+    /* Define dado1 como o id da missão */
+    evento->dado1 = id_missao;
+
+    /* Define dado2 como 0 */
+    evento->dado2 = 0;
+
+    /* Define tempo como o tempo atual */
+    evento->tempo = tempo_atual;
+
+    /* Retorna o evento instanciado */
+    return evento;
+}
+
+/*
  * Função que instancia um vetor de conjuntos.
  * Recebe como parâmetro o tamanho do vetor e o tamanho dos conjuntos.
  * Retorna o vetor de conjuntos instanciado.
@@ -121,25 +203,13 @@ int tratar_evento_chegada(lef_t *lef, evento_t *evento, mundo_t *mundo)
             printf("DESISTE\n");
 
             /* Aloca memória para o evento de saída */
-            if (!(evento_saida = (evento_t *)malloc(sizeof(evento_t))))
+            if (!(evento_saida = instanciar_evento_saida(evento->dado1, evento->dado2, mundo->tempo_atual)))
             {
                 /* Imprime mensagem de erro caso não seja possível alocar memória */
                 printf("ERRO: Não foi possível alocar memória para o evento de saída.\n");
 
                 return FAILURE;
             }
-
-            /* Define o tipo do evento de saída como TIPO_SAIDA */
-            evento_saida->tipo = TIPO_SAIDA;
-
-            /* Define dado1 como o id do herói */
-            evento_saida->dado1 = evento->dado1;
-
-            /* Define dado2 como o id do local */
-            evento_saida->dado2 = evento->dado2;
-
-            /* Define o tempo do evento de saída como o tempo atual do mundo */
-            evento_saida->tempo = mundo->tempo_atual;
 
             /* Adiciona o evento de saída na LEF */
             if (!(adiciona_ordem_lef(lef, evento_saida)))
@@ -174,29 +244,17 @@ int tratar_evento_chegada(lef_t *lef, evento_t *evento, mundo_t *mundo)
         return FAILURE;
     }
 
+    /* Calcula o Tempo de Permanência no Local (TPL) */
+    tpl = calcular_tpl(mundo->herois[evento->dado1]->paciencia);
+
     /* Aloca memória para o evento de saída */
-    if (!(evento_saida = (evento_t *)malloc(sizeof(evento_t))))
+    if (!(evento_saida = instanciar_evento_saida(evento->dado1, evento->dado2, mundo->tempo_atual + tpl)))
     {
         /* Imprime mensagem de erro caso não seja possível alocar memória */
         printf("ERRO: Não foi possível alocar memória para o evento de saída.\n");
 
         return FAILURE;
     }
-
-    /* Define o tipo do evento de saída como TIPO_SAIDA */
-    evento_saida->tipo = TIPO_SAIDA;
-
-    /* Define dado1 como o id do herói */
-    evento_saida->dado1 = evento->dado1;
-
-    /* Define dado2 como o id do local */
-    evento_saida->dado2 = evento->dado2;
-
-    /* Calcula o Tempo de Permanência no Local (TPL) */
-    tpl = calcular_tpl(mundo->herois[evento->dado1]->paciencia);
-
-    /* Define o tempo do evento de saída como o tempo atual do mundo + o Tempo de Permanência no Local (TPL) */
-    evento_saida->tempo = mundo->tempo_atual + tpl;
 
     /* Adiciona o evento de saída na LEF */
     if (!(adiciona_ordem_lef(lef, evento_saida)))
@@ -223,31 +281,22 @@ int tratar_evento_chegada(lef_t *lef, evento_t *evento, mundo_t *mundo)
  */
 int tratar_evento_saida(lef_t *lef, evento_t *evento, mundo_t *mundo)
 {
-    int *elemento, tdl;
+    int *elemento, id_local_dest, tdl;
     evento_t *evento_chegada;
 
+    /* Atribui o id do local de destino do herói com valor aleatório entre 0 e o número de locais - 1 */
+    id_local_dest = aleat(0, mundo->n_locais - 1);
+
+    /* Calcula o Tempo de Deslocamento entre Locais (TDL) */
+    tdl = calcular_tdl(mundo, evento->dado2, id_local_dest, evento->dado1);
+
     /* Aloca memória para o evento de chegada */
-    if (!(evento_chegada = (evento_t *)malloc(sizeof(evento_t))))
+    if (!(evento_chegada = instanciar_evento_chegada(evento->dado1, id_local_dest, mundo->tempo_atual + tdl)))
     {
         /* Imprime mensagem de erro caso não seja possível alocar memória */
         printf("ERRO: Não foi possível alocar memória para o evento de chegada.\n");
         return FAILURE;
     }
-
-    /* Define o tipo do evento de chegada como TIPO_CHEGADA */
-    evento_chegada->tipo = TIPO_CHEGADA;
-
-    /* Define dado1 como o id do herói */
-    evento_chegada->dado1 = evento->dado1;
-
-    /* Define dado2 como o id de um local aleatório entre 0 e o número de locais - 1 */
-    evento_chegada->dado2 = aleat(0, mundo->n_locais - 1);
-
-    /* Calcula o Tempo de Deslocamento entre Locais (TDL) */
-    tdl = calcular_tdl(mundo, evento->dado2, evento_chegada->dado2, evento_chegada->dado1);
-
-    /* Define o tempo do evento de chegada como o tempo atual do mundo + o Tempo de Deslocamento entre Locais (TDL) */
-    evento_chegada->tempo = mundo->tempo_atual + tdl;
 
     /* Adiciona o evento de chegada na LEF */
     if (!(adiciona_ordem_lef(lef, evento_chegada)))
@@ -270,14 +319,6 @@ int tratar_evento_saida(lef_t *lef, evento_t *evento, mundo_t *mundo)
         /* Verifica se o tamanho da fila do id do local é maior que 0 */
         if (tamanho_fila(mundo->locais[evento->dado2]->fila) > 0)
         {
-            /* Aloca memória para o evento de chegada */
-            if (!(evento_chegada = (evento_t *)malloc(sizeof(evento_t))))
-            {
-                /* Imprime mensagem de erro caso não seja possível alocar memória */
-                printf("ERRO: Não foi possível alocar memória para o evento de chegada.\n");
-                return FAILURE;
-            }
-
             /* Aloca memória para o elemento da fila */
             if (!(elemento = (int *)malloc(sizeof(int))))
             {
@@ -293,18 +334,13 @@ int tratar_evento_saida(lef_t *lef, evento_t *evento, mundo_t *mundo)
                 printf("ERROR: Houve um problema ao retirar o elemento da fila.\n");
                 return FAILURE;
             }
-
-            /* Define o tipo do evento de chegada como TIPO_CHEGADA */
-            evento_chegada->tipo = TIPO_CHEGADA;
-
-            /* Define dado1 como o id do herói retirado da fila */
-            evento_chegada->dado1 = *elemento;
-
-            /* Define dado2 como o id do local */
-            evento_chegada->dado2 = evento->dado2;
-
-            /* Define o tempo do evento de chegada como o tempo atual do mundo */
-            evento_chegada->tempo = mundo->tempo_atual;
+            /* Aloca memória para o evento de chegada */
+            if (!(evento_chegada = instanciar_evento_chegada(*elemento, evento->dado2, mundo->tempo_atual)))
+            {
+                /* Imprime mensagem de erro caso não seja possível alocar memória */
+                printf("ERRO: Não foi possível alocar memória para o evento de chegada.\n");
+                return FAILURE;
+            }
 
             /* Adiciona o evento de chegada na LEF */
             if (!(adiciona_inicio_lef(lef, evento_chegada)))
@@ -467,7 +503,7 @@ int tratar_evento_missao(lef_t *lef, evento_t *evento, mundo_t *mundo, missao_t 
     printf("%6d:MISSAO %2d IMPOSSIVEL\n", evento->tempo, evento->dado1);
 
     /* Aloca memória para o evento missao */
-    if (!(evento_missao = (evento_t *)malloc(sizeof(evento_t))))
+    if (!(evento_missao = instanciar_evento_missao(evento->dado1, aleat(mundo->tempo_atual, FIM_DO_MUNDO))))
     {
         /* Imprime mensagem de erro */
         printf("ERRO: Não foi possível alocar memória para o evento missao.\n");
@@ -475,20 +511,12 @@ int tratar_evento_missao(lef_t *lef, evento_t *evento, mundo_t *mundo, missao_t 
         return FAILURE;
     }
 
-    /* Define o tipo do evento missao como TIPO_MISSAO */
-    evento_missao->tipo = TIPO_MISSAO;
-
-    /* Define o dado1 do evento missao como o identificador da missão */
-    evento_missao->dado1 = evento->dado1;
-
-    /* Define o tempo do evento missao como um valor aleatório entre o tempo atual e o fim do mundo */
-    evento_missao->tempo = aleat(mundo->tempo_atual, FIM_DO_MUNDO);
-
     /* Adiciona o evento missao na lista de eventos */
     if (!(adiciona_ordem_lef(lef, evento_missao)))
     {
         /* Imprime mensagem de erro caso não seja possível adicionar o evento missao na lista de eventos */
         printf("ERRO: Houve um problema ao adicionar o evento missao na lista de eventos.\n");
+     
         return FAILURE;
     }
 
